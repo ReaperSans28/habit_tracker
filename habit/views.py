@@ -10,7 +10,7 @@ from habit.services import send_tg_message
 
 class PublicListAPIView(generics.ListAPIView):
     serializer_class = HabitSerializer
-    queryset = Habit.objects.filter(is_public=True)
+    queryset = Habit.objects.filter(is_habit_public=True)
     permission_classes = (AllowAny,)
     pagination_class = CustomPagination
 
@@ -21,7 +21,7 @@ class HabitListAPIView(generics.ListAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
+        return Habit.objects.filter(habit_owner=self.request.user)
 
 
 class HabitRetrieveAPIView(generics.RetrieveAPIView):
@@ -36,11 +36,11 @@ class HabitCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         habit = serializer.save()
-        habit.user = self.request.user
+        habit.habit_owner = self.request.user
         habit = serializer.save()
         habit.save()
-        if habit.user.tg_chat_id:
-            send_tg_message(habit.user.tg_chat_id, "Новая привычка создана")
+        if habit.habit_owner.tg_chat_id:
+            send_tg_message(habit.habit_owner.tg_chat_id, "Новая привычка создана")
 
 
 class HabitUpdateAPIView(generics.UpdateAPIView):
